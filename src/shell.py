@@ -45,10 +45,11 @@ def parse_command(line: str) -> list[str]:
 class Shell:
     """Состояние прототипа оболочки с командами-заглушками."""
 
-    def __init__(self) -> None:
+    def __init__(self, configuration: dict[str, str] | None = None) -> None:
         """Сохранить имя пользователя и узла реальной ОС."""
         self.username = os.environ.get("USER", "user")
         self.hostname = os.uname().nodename
+        self.configuration = configuration or {}
 
     def prompt(self) -> str:
         """Сформировать приглашение на основе реальных данных ОС."""
@@ -64,8 +65,22 @@ class Shell:
             if arguments:
                 raise CommandError("использование: exit")
             return CommandResult("Завершение работы.", should_exit=True)
+        if command == "conf-dump":
+            if arguments:
+                raise CommandError("использование: conf-dump")
+            return CommandResult(self._dump_configuration())
         if command not in {"ls", "cd"}:
-            raise CommandError(f"неизвестная команда: {command}")
+            raise CommandError(
+                f"неизвестная команда: {command}"
+            )
         details = " ".join(arguments) or "(без аргументов)"
         return CommandResult(f"{command}: {details}")
+
+    def _dump_configuration(self) -> str:
+        """Сериализовать параметры запуска в формате ключ-значение."""
+        if not self.configuration:
+            return "Конфигурация не задана."
+        return "\n".join(
+            f"{key}={value}" for key, value in self.configuration.items()
+        )
 

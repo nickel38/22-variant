@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import sys
 
+from .config import parse_config
 from .shell import CommandError, Shell
+from .startup import run_startup
 
 
 def run_repl(shell: Shell) -> int:
     """Запустить интерактивный REPL до `exit`, EOF или прерывания."""
-    print("Эмулятор оболочки, этап 1. Команды: ls, cd, exit.")
+    print(
+        "Эмулятор оболочки, этап 1. Команды: ls, cd, exit."
+    )
     while True:
         try:
             line = input(f"{shell.prompt()} ")
@@ -27,9 +31,25 @@ def run_repl(shell: Shell) -> int:
             return 0
 
 
-def main() -> int:
-    """Создать оболочку и передать управление REPL."""
-    return run_repl(Shell())
+def _write(text: str, tag: str) -> None:
+    """Вывести сообщение стартового скрипта с учётом его типа."""
+    stream = sys.stderr if tag == "error" else sys.stdout
+    print(text, file=stream)
+
+
+def main(arguments: list[str] | None = None) -> int:
+    """Разобрать конфигурацию, выполнить скрипт и запустить REPL."""
+    config = parse_config(arguments)
+    print("Конфигурация запуска:")
+    print(config.describe())
+    shell = Shell(config.as_dict())
+    if config.startup_path is not None:
+        result = run_startup(config.startup_path, shell, _write)
+        if result.failed:
+            return 1
+        if result.should_exit or not sys.stdin.isatty():
+            return 0
+    return run_repl(shell)
 
 
 if __name__ == "__main__":
