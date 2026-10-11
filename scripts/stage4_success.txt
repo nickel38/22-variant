@@ -1,0 +1,13 @@
+conf-dump
+ls
+ls -l /
+ls /docs
+cd /docs
+ls
+cd ..
+uptime
+who
+cd
+ls
+exit
+
