@@ -1,6 +1,4 @@
 conf-dump
 ls
-cd /docs
-ls
 exit
 

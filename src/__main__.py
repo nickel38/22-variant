@@ -12,9 +12,7 @@ from .vfs import VFSError, VirtualFS
 
 def run_repl(shell: Shell) -> int:
     """Запустить интерактивный REPL до `exit`, EOF или прерывания."""
-    print(
-        "Эмулятор оболочки, этап 1. Команды: ls, cd, exit."
-    )
+    print("Эмулятор оболочки. Команды: ls, cd, uptime, who, chown, exit.")
     while True:
         try:
             line = input(f"{shell.prompt()} ")

@@ -1,0 +1,7 @@
+ls -l /
+chown alice:staff /README.txt
+chown -R service:ops /docs
+ls -l /
+ls -l /docs
+exit
+

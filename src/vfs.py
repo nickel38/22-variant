@@ -167,3 +167,19 @@ class VirtualFS:
         except UnicodeError as error:
             raise VFSError(f"файл не является UTF-8 текстом: {path}") from error
 
+    def chown(self, path: str, owner: str | None, group: str | None,
+              recursive: bool = False) -> None:
+        """Изменить владельца узла и, при `recursive`, его потомков."""
+        node = self.get(path)
+        targets = [path]
+        if recursive and node.directory:
+            prefix = path.rstrip("/") + "/"
+            targets.extend(candidate for candidate in self.nodes if
+                           candidate.startswith(prefix))
+        for target in targets:
+            current = self.nodes[target]
+            if owner is not None:
+                current.owner = owner
+            if group is not None:
+                current.group = group
+

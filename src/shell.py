@@ -92,6 +92,8 @@ class Shell:
             return self._uptime(arguments)
         if command == "who":
             return self._who(arguments)
+        if command == "chown":
+            return self._chown(arguments)
         raise CommandError(f"неизвестная команда: {command}")
 
     def _ls(self, arguments: list[str]) -> CommandResult:
@@ -175,6 +177,44 @@ class Shell:
             raise CommandError("использование: who")
         timestamp = self.login_time.strftime("%Y-%m-%d %H:%M")
         return CommandResult(f"{self.username} pts/0 {timestamp}")
+
+    def _chown(self, arguments: list[str]) -> CommandResult:
+        """Изменить владельца узла только в памяти VFS."""
+        if self.vfs is None:
+            raise CommandError("VFS не загружена")
+        recursive, values = self._chown_options(arguments)
+        if len(values) != 2:
+            raise CommandError("использование: chown [-R] OWNER[:GROUP] PATH")
+        owner, group = self._ownership(values[0])
+        path, _ = self._node(values[1])
+        try:
+            self.vfs.chown(path, owner, group, recursive)
+        except VFSError as error:
+            raise CommandError(str(error)) from error
+        shown = values[0]
+        suffix = " рекурсивно" if recursive else ""
+        return CommandResult(f"владелец {path}: {shown}{suffix}")
+
+    @staticmethod
+    def _chown_options(arguments: list[str]) -> tuple[bool, list[str]]:
+        """Разобрать опциональный ключ рекурсивного chown."""
+        recursive = bool(arguments and arguments[0] == "-R")
+        values = arguments[1:] if recursive else arguments
+        if any(value.startswith("-") for value in values):
+            raise CommandError("неизвестный ключ chown")
+        return recursive, values
+
+    @staticmethod
+    def _ownership(value: str) -> tuple[str | None, str | None]:
+        """Разобрать OWNER[:GROUP] и проверить непустую часть."""
+        if value.count(":") > 1:
+            raise CommandError("владелец должен иметь формат OWNER[:GROUP]")
+        owner, separator, group = value.partition(":")
+        if not owner and not group:
+            raise CommandError("владелец не задан")
+        if any(char.isspace() for char in value):
+            raise CommandError("имя владельца не должно содержать пробелы")
+        return owner or None, group if separator and group else None
 
     def _node(self, raw_path: str) -> tuple[str, object]:
         """Разрешить путь и преобразовать ошибку VFS в ошибку команды."""
