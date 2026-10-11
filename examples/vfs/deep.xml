@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vfs name="deep">
+  <directory path="/one" />
+  <directory path="/one/two" />
+  <directory path="/one/two/three" />
+  <file path="/one/two/three/value.txt">
+    ZGVlcCB2YWx1ZQo=
+  </file>
+</vfs>
+

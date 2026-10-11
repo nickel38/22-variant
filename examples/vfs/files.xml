@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vfs name="files">
+  <directory path="/docs" owner="student" group="students" />
+  <file path="/README.txt" owner="student" group="students">
+    SGVsbG8gZnJvbSB0aGUgVkZTLg==
+  </file>
+  <file path="/docs/notes.txt" owner="student" group="students">
+    VGVzdCBub3Rlcy4K
+  </file>
+  <file path="/data.bin">AP+A</file>
+</vfs>
+

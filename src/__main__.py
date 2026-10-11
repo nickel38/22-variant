@@ -7,6 +7,7 @@ import sys
 from .config import parse_config
 from .shell import CommandError, Shell
 from .startup import run_startup
+from .vfs import VFSError, VirtualFS
 
 
 def run_repl(shell: Shell) -> int:
@@ -42,7 +43,13 @@ def main(arguments: list[str] | None = None) -> int:
     config = parse_config(arguments)
     print("Конфигурация запуска:")
     print(config.describe())
-    shell = Shell(config.as_dict())
+    try:
+        filesystem = (VirtualFS.load(config.vfs_path)
+                      if config.vfs_path else VirtualFS())
+    except VFSError as error:
+        print(f"Ошибка загрузки VFS: {error}", file=sys.stderr)
+        return 1
+    shell = Shell(config.as_dict(), filesystem)
     if config.startup_path is not None:
         result = run_startup(config.startup_path, shell, _write)
         if result.failed:

@@ -6,6 +6,10 @@ import os
 import re
 import shlex
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .vfs import VirtualFS
 
 
 class CommandError(ValueError):
@@ -45,11 +49,13 @@ def parse_command(line: str) -> list[str]:
 class Shell:
     """Состояние прототипа оболочки с командами-заглушками."""
 
-    def __init__(self, configuration: dict[str, str] | None = None) -> None:
+    def __init__(self, configuration: dict[str, str] | None = None,
+                 vfs: "VirtualFS | None" = None) -> None:
         """Сохранить имя пользователя и узла реальной ОС."""
         self.username = os.environ.get("USER", "user")
         self.hostname = os.uname().nodename
         self.configuration = configuration or {}
+        self.vfs = vfs
 
     def prompt(self) -> str:
         """Сформировать приглашение на основе реальных данных ОС."""
